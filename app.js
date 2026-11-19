@@ -1,16 +1,54 @@
 const STORAGE_KEY = "road-to-10k-runs-v1";
+const ACTIVITY_STORAGE_KEY = "road-to-10k-activity-v1";
 const START_STORAGE_KEY = "road-to-10k-start-date-v1";
 const CHECKPOINT_STORAGE_KEY = "road-to-10k-checkpoint-date-v1";
+const QUOTE_STORAGE_KEY = "road-to-10k-quote-v1";
 const DEFAULT_START_DATE = "2026-12-01";
 const DEFAULT_CHECKPOINT_DATE = "2026-12-30";
 const BASELINE_KM = 1;
 const GOAL_KM = 10;
+const MOTIVATIONAL_LINES = [
+  "Slow is a pace. Showing up is the win.",
+  "A short run still moves you forward.",
+  "You can begin again at the very next step.",
+  "Progress is allowed to be quiet.",
+  "Your effort counts, even when nobody sees it.",
+  "Keep the promise small enough to keep.",
+  "Every steady day is building something.",
+  "You do not have to feel ready to begin.",
+  "Rest is part of the distance, too.",
+  "One good choice can change the shape of a day.",
+  "Meet yourself where you are, then go gently.",
+  "A little farther is still farther.",
+  "There is no rush in a real beginning.",
+  "Your next step is enough for right now.",
+  "Consistency can be kind and still be strong.",
+  "Let today be a practice, not a test.",
+  "You are allowed to take the scenic route.",
+  "Small wins make a path you can follow.",
+  "The work is becoming someone who returns.",
+  "Take a breath. Then take the next step.",
+  "A gentler pace can carry you a long way.",
+  "The finish starts with deciding to begin.",
+  "You are building trust with every promise kept.",
+  "There is strength in starting where you are.",
+  "Today's effort is enough to be proud of.",
+  "Keep going in a way that lets you keep going.",
+  "The road gets shorter one step at a time.",
+  "You do not need a perfect day to make progress.",
+  "A pause is not the end of your story.",
+  "You are closer than you were when you started."
+];
 
 const $ = (selector) => document.querySelector(selector);
 const today = atMidnight(new Date());
 
 function atMidnight(date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function localDateValue(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
 function parseDate(value) {
@@ -78,7 +116,45 @@ function loadRuns() {
   }
 }
 
+function loadActivityRecords() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ACTIVITY_STORAGE_KEY) || "{}");
+    if (!saved || typeof saved !== "object" || Array.isArray(saved)) return {};
+
+    return Object.fromEntries(Object.entries(saved)
+      .filter(([date, record]) => isValidDateValue(date) && date <= localDateValue(today) && record && typeof record === "object")
+      .map(([date, record]) => [date, {
+        steps: isValidMetric(record.steps, 0, 250000) ? Number(record.steps) : null,
+        calories: isValidMetric(record.calories, 0, 10000) ? Number(record.calories) : null,
+        heartRate: isValidMetric(record.heartRate, 25, 240) ? Number(record.heartRate) : null
+      }])
+      .filter(([, record]) => record.steps !== null || record.calories !== null || record.heartRate !== null));
+  } catch {
+    return {};
+  }
+}
+
+function isValidMetric(value, minimum, maximum) {
+  return value !== null && value !== "" && Number.isFinite(Number(value)) && Number(value) >= minimum && Number(value) <= maximum;
+}
+
+function loadQuoteIndex() {
+  const dayNumber = Math.floor((parseDate(localDateValue(today)) - parseDate("2026-01-01")) / 86400000);
+  const dailyIndex = ((dayNumber % MOTIVATIONAL_LINES.length) + MOTIVATIONAL_LINES.length) % MOTIVATIONAL_LINES.length;
+  try {
+    const [savedDate, savedIndex] = (localStorage.getItem(QUOTE_STORAGE_KEY) || "").split("|");
+    const index = Number(savedIndex);
+    return savedDate === localDateValue(today) && Number.isInteger(index) && index >= 0 && index < MOTIVATIONAL_LINES.length
+      ? index
+      : dailyIndex;
+  } catch {
+    return dailyIndex;
+  }
+}
+
 let runs = loadRuns();
+let activityRecords = loadActivityRecords();
+let quoteIndex = loadQuoteIndex();
 let startDate = loadStoredDate(START_STORAGE_KEY, DEFAULT_START_DATE);
 let checkpointDate = loadStoredDate(CHECKPOINT_STORAGE_KEY, DEFAULT_CHECKPOINT_DATE);
 if (parseDate(checkpointDate) < parseDate(startDate)) {
@@ -193,6 +269,95 @@ function renderRuns() {
     });
 }
 
+function renderQuote() {
+  $("#daily-quote").textContent = `“${MOTIVATIONAL_LINES[quoteIndex]}”`;
+}
+
+function setActivityMetric(valueSelector, captionSelector, value, missingCaption, format = (number) => new Intl.NumberFormat("en-IN").format(number)) {
+  $(valueSelector).textContent = value === null || value === undefined ? "—" : format(value);
+  $(captionSelector).textContent = value === null || value === undefined ? missingCaption : "Saved from your check-in";
+}
+
+function renderActivity() {
+  const selectedDate = $("#activity-date").value || localDateValue(today);
+  const record = activityRecords[selectedDate] || {};
+  const isToday = selectedDate === localDateValue(today);
+  $("#activity-date-label").textContent = isToday
+    ? "Today"
+    : parseDate(selectedDate).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+
+  setActivityMetric("#activity-steps-value", "#activity-steps-caption", record.steps ?? null, "Not added for this day");
+  setActivityMetric("#activity-calories-value", "#activity-calories-caption", record.calories ?? null, "Not added for this day");
+  setActivityMetric("#activity-heart-value", "#activity-heart-caption", record.heartRate ?? null, "Not added for this day", (number) => String(number));
+
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const date = shiftDate(selectedDate, index - 6);
+    return { date, record: activityRecords[date] || null };
+  });
+  const firstDate = parseDate(days[0].date).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  const lastDate = parseDate(selectedDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  $("#week-range-label").textContent = `${firstDate} – ${lastDate}`;
+
+  const knownStepValues = days.map(({ record: dayRecord }) => dayRecord?.steps).filter((value) => value !== null && value !== undefined);
+  const maximumSteps = Math.max(1, ...knownStepValues);
+  const chart = $("#week-chart");
+  chart.replaceChildren();
+
+  for (const { date, record: dayRecord } of days) {
+    const steps = dayRecord?.steps ?? null;
+    const column = document.createElement("div");
+    column.className = "week-day";
+    column.setAttribute("role", "listitem");
+    const label = parseDate(date).toLocaleDateString("en-IN", { weekday: "short" });
+    const value = document.createElement("span");
+    value.className = "week-day-value";
+    value.textContent = steps === null ? "—" : steps >= 1000 ? `${(steps / 1000).toFixed(steps >= 10000 ? 0 : 1)}k` : String(steps);
+    const track = document.createElement("div");
+    track.className = "week-bar-track";
+    const fill = document.createElement("span");
+    fill.className = "week-bar-fill";
+    fill.style.height = steps === null ? "3px" : `${Math.max(5, (steps / maximumSteps) * 100)}%`;
+    track.append(fill);
+    const day = document.createElement("span");
+    day.className = "week-day-label";
+    day.textContent = label;
+    column.setAttribute("aria-label", `${label}, ${formatDate(date)}: ${steps === null ? "no step entry" : `${new Intl.NumberFormat("en-IN").format(steps)} steps`}`);
+    column.append(value, track, day);
+    chart.append(column);
+  }
+
+  const savedDays = days.filter(({ record: dayRecord }) => dayRecord);
+  if (savedDays.length === 0) {
+    $("#week-summary").textContent = "Your weekly view will grow with each check-in.";
+  } else {
+    const summary = [];
+    if (days.some(({ record: dayRecord }) => dayRecord?.steps !== null && dayRecord?.steps !== undefined)) {
+      const stepTotal = days.reduce((total, { record: dayRecord }) => total + (dayRecord?.steps ?? 0), 0);
+      summary.push(`${new Intl.NumberFormat("en-IN").format(stepTotal)} saved steps`);
+    }
+    if (days.some(({ record: dayRecord }) => dayRecord?.calories !== null && dayRecord?.calories !== undefined)) {
+      const calorieTotal = days.reduce((total, { record: dayRecord }) => total + (dayRecord?.calories ?? 0), 0);
+      summary.push(`${new Intl.NumberFormat("en-IN").format(calorieTotal)} active kcal`);
+    }
+    const heartReadings = days.map(({ record: dayRecord }) => dayRecord?.heartRate).filter((value) => value !== null && value !== undefined);
+    if (heartReadings.length) {
+      const average = Math.round(heartReadings.reduce((total, value) => total + value, 0) / heartReadings.length);
+      summary.push(`${average} bpm average of ${heartReadings.length} saved ${heartReadings.length === 1 ? "reading" : "readings"}`);
+    }
+    $("#week-summary").textContent = summary.join(" · ");
+  }
+}
+
+function loadActivityDraft() {
+  const date = $("#activity-date").value;
+  const record = activityRecords[date] || {};
+  $("#activity-steps").value = record.steps ?? "";
+  $("#activity-calories").value = record.calories ?? "";
+  $("#activity-heart-rate").value = record.heartRate ?? "";
+  $("#activity-message").textContent = "";
+  renderActivity();
+}
+
 function saveRuns() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(runs));
 }
@@ -207,6 +372,70 @@ function init() {
   renderMilestones();
   renderProgress();
   renderRuns();
+
+  const activityDateInput = $("#activity-date");
+  activityDateInput.max = localDateValue(today);
+  activityDateInput.value = localDateValue(today);
+  loadActivityDraft();
+
+  activityDateInput.addEventListener("change", () => {
+    if (!isValidDateValue(activityDateInput.value)) return;
+    loadActivityDraft();
+  });
+
+  $("#activity-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const date = activityDateInput.value;
+    const fields = {
+      steps: $("#activity-steps").value.trim(),
+      calories: $("#activity-calories").value.trim(),
+      heartRate: $("#activity-heart-rate").value.trim()
+    };
+
+    if (!isValidDateValue(date) || date > localDateValue(today)) {
+      $("#activity-message").textContent = "Choose today or an earlier day for your check-in.";
+      return;
+    }
+    if (Object.values(fields).every((value) => value === "")) {
+      $("#activity-message").textContent = "Add at least one number to save your check-in.";
+      return;
+    }
+    if ((fields.steps !== "" && !isValidMetric(fields.steps, 0, 250000))
+      || (fields.calories !== "" && !isValidMetric(fields.calories, 0, 10000))
+      || (fields.heartRate !== "" && !isValidMetric(fields.heartRate, 25, 240))) {
+      $("#activity-message").textContent = "Check the numbers and try again.";
+      return;
+    }
+
+    const previousRecord = activityRecords[date];
+    activityRecords[date] = {
+      steps: fields.steps === "" ? null : Number(fields.steps),
+      calories: fields.calories === "" ? null : Number(fields.calories),
+      heartRate: fields.heartRate === "" ? null : Number(fields.heartRate)
+    };
+    try {
+      localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(activityRecords));
+    } catch {
+      if (previousRecord) activityRecords[date] = previousRecord;
+      else delete activityRecords[date];
+      $("#activity-message").textContent = "This browser could not save the check-in. Please try again.";
+      return;
+    }
+
+    renderActivity();
+    $("#activity-message").textContent = "Saved. You can edit this day any time.";
+  });
+
+  $("#next-quote").addEventListener("click", () => {
+    quoteIndex = (quoteIndex + 1) % MOTIVATIONAL_LINES.length;
+    renderQuote();
+    try {
+      localStorage.setItem(QUOTE_STORAGE_KEY, `${localDateValue(today)}|${quoteIndex}`);
+    } catch {
+      // The quote still changes for this visit if browser storage is unavailable.
+    }
+  });
+  renderQuote();
 
   const handleDateRangeChange = () => {
     if (!isValidDateValue(startInput.value) || !isValidDateValue(checkpointInput.value)) {

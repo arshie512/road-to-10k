@@ -23,6 +23,7 @@
       </a>
       <nav class="main-nav" aria-label="Main navigation">
         <a href="#progress">Progress</a>
+        <a href="#daily-stats">Daily activity</a>
         <a href="#plan">The plan</a>
         <a href="#run-log">Run log</a>
       </nav>
@@ -91,6 +92,48 @@
         </div>
       </section>
 
+      <section class="section-wrap activity-section" id="daily-stats" aria-labelledby="activity-title">
+        <div class="section-heading activity-heading">
+          <div><p class="eyebrow">A GENTLE DAILY CHECK-IN</p><h2 id="activity-title">Your day, in your numbers.</h2></div>
+          <p class="section-intro">Bring over the stats your watch recorded. You choose what to track, and you can update a day whenever you need.</p>
+        </div>
+
+        <div class="wearable-note">
+          <span class="wearable-icon" aria-hidden="true">⌁</span>
+          <div class="wearable-copy"><span class="mini-label">WATCH SYNC · MANUAL FOR NOW</span><p>Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs a phone companion app; support depends on the watch and its app.</p></div>
+          <span class="manual-badge"><i></i> Saved on this device</span>
+        </div>
+
+        <div class="activity-date-heading"><span class="mini-label">YOUR CHECK-IN</span><strong id="activity-date-label">Today</strong></div>
+        <div class="activity-metrics" aria-label="Activity stats for the selected date">
+          <article class="metric-card"><span class="metric-icon steps-icon" aria-hidden="true">↗</span><div><span class="metric-label">STEPS</span><strong id="activity-steps-value">—</strong><small id="activity-steps-caption">Add a daily total</small></div><span class="metric-unit">steps</span></article>
+          <article class="metric-card"><span class="metric-icon calories-icon" aria-hidden="true">✳</span><div><span class="metric-label">ACTIVE CALORIES</span><strong id="activity-calories-value">—</strong><small id="activity-calories-caption">Use your watch’s estimate</small></div><span class="metric-unit">kcal</span></article>
+          <article class="metric-card"><span class="metric-icon heart-icon" aria-hidden="true">♡</span><div><span class="metric-label">HEART RATE</span><strong id="activity-heart-value">—</strong><small id="activity-heart-caption">Add a reading from your watch</small></div><span class="metric-unit">bpm</span></article>
+        </div>
+
+        <div class="activity-layout">
+          <form class="activity-form" id="activity-form">
+            <div class="activity-form-heading"><div><h3>Add your stats</h3><p>Use the numbers shown in your watch’s companion app.</p></div><span aria-hidden="true">＋</span></div>
+            <label class="field-group activity-day-field"><span class="field-label">Day</span><input id="activity-date" name="date" type="date" required /></label>
+            <div class="activity-fields">
+              <label class="field-group"><span class="field-label">Steps <small>optional</small></span><input id="activity-steps" name="steps" type="number" min="0" max="250000" step="1" inputmode="numeric" placeholder="4,200" /></label>
+              <label class="field-group"><span class="field-label">Active calories <small>optional · kcal</small></span><input id="activity-calories" name="calories" type="number" min="0" max="10000" step="1" inputmode="numeric" placeholder="280" /></label>
+              <label class="field-group"><span class="field-label">Heart rate <small>optional · bpm</small></span><input id="activity-heart-rate" name="heartRate" type="number" min="25" max="240" step="1" inputmode="numeric" placeholder="78" /></label>
+            </div>
+            <button class="button button-primary activity-submit" type="submit">Save daily check-in <span aria-hidden="true">↗</span></button>
+            <p class="activity-message" id="activity-message" role="status" aria-live="polite"></p>
+            <p class="activity-privacy">Calories are your device’s estimate. Health readings stay in this browser on this device.</p>
+          </form>
+
+          <div class="week-panel" aria-labelledby="week-title">
+            <div class="week-heading"><div><h3 id="week-title">A little week at a time</h3><p id="week-range-label">The last seven days</p></div><span class="week-spark" aria-hidden="true">✳</span></div>
+            <p class="week-summary" id="week-summary" role="status" aria-live="polite">Your weekly view will grow with each check-in.</p>
+            <div class="week-chart" id="week-chart" role="list" aria-label="Daily steps for the selected day and previous six days"></div>
+            <p class="week-caption">Step totals for the selected day and the six days before it.</p>
+          </div>
+        </div>
+      </section>
+
       <section class="section-wrap plan-section" id="plan" aria-labelledby="plan-title">
         <div class="section-heading">
           <div><p class="eyebrow">A PLAN WITH ROOM TO BREATHE</p><h2 id="plan-title">Small steps. Strong finish.</h2></div>
@@ -100,9 +143,10 @@
           <div class="timeline" id="milestone-list" aria-label="Upcoming running milestones"></div>
           <aside class="plan-note">
             <span class="note-asterisk" aria-hidden="true">✳</span>
-            <p class="eyebrow">A NOTE TO SELF</p>
-            <blockquote>“Every step counts.”</blockquote>
+            <p class="eyebrow">A LINE FOR TODAY</p>
+            <blockquote id="daily-quote" aria-live="polite">“Every step counts.”</blockquote>
             <p>There is no perfect pace here. The goal is to return to the road, recover well, and take the next small step.</p>
+            <button class="quote-next" id="next-quote" type="button">Another line <span aria-hidden="true">↻</span></button>
             <span class="note-signature">— ROAD / 10K</span>
           </aside>
         </div>
