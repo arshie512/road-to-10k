@@ -146,6 +146,23 @@ button, input { font: inherit; }
 .manual-entry-link:hover { text-decoration: underline; }
 .manual-entry-link:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 .health-sync-status { max-width: 195px; margin: 0; color: #8297a7; font-size: 8px; line-height: 1.5; text-align: right; }
+.watch-connection-guide { margin-top: 10px; border: 1px solid var(--line); background: rgba(8, 22, 35, .52); }
+.watch-connection-guide summary { min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 10px 15px; color: #d9e5eb; font-size: 11px; font-weight: 700; cursor: pointer; list-style: none; }
+.watch-connection-guide summary::-webkit-details-marker { display: none; }
+.watch-connection-guide summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+.watch-guide-action { display: inline-flex; align-items: center; gap: 10px; color: var(--cyan); font-size: 9px; font-weight: 600; }
+.watch-guide-action::after { content: "+"; width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid rgba(91, 231, 238, .28); border-radius: 50%; font-size: 14px; line-height: 1; }
+.watch-connection-guide[open] .watch-guide-action::after { content: "−"; }
+.watch-guide-panel { padding: 0 15px 15px; }
+.watch-guide-intro { margin: 0; color: #91a6b5; font-size: 11px; line-height: 1.65; }
+.watch-guide-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin: 12px 0; padding: 0; list-style: none; }
+.watch-guide-steps li { display: flex; gap: 10px; min-width: 0; padding: 12px; border: 1px solid rgba(255, 255, 255, .07); background: rgba(4, 14, 24, .45); }
+.watch-guide-number { width: 25px; height: 25px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid rgba(91, 231, 238, .25); border-radius: 50%; color: var(--cyan); font-family: var(--mono); font-size: 8px; }
+.watch-guide-steps h3 { margin: 1px 0 5px; color: #dce7ed; font-size: 10px; line-height: 1.5; }
+.watch-guide-steps p { margin: 0; color: #8297a7; font-size: 9px; line-height: 1.65; }
+.watch-guide-steps strong { color: #afc2cf; }
+.watch-guide-availability { margin: 0; padding: 10px 12px; border-left: 2px solid rgba(227, 178, 107, .65); color: #99aab7; background: rgba(227, 178, 107, .05); font-size: 9px; line-height: 1.65; }
+.watch-guide-availability strong { color: #e3b26b; }
 .activity-date-heading { display: flex; align-items: baseline; justify-content: space-between; margin: 26px 0 12px; }
 .activity-date-heading strong { color: #d9e5eb; font-size: 12px; }
 .activity-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -261,6 +278,7 @@ button, input { font: inherit; }
   .hero-description { font-size: 13px; }
   .progress-panel { grid-template-columns: 1.2fr .8fr; }
   .activity-layout { grid-template-columns: 1fr; }
+  .watch-guide-steps { grid-template-columns: 1fr; }
   .date-settings { grid-template-columns: 1fr 1fr; }
   .goal-distance-field { grid-column: 1 / -1; }
   .goal-range-copy { grid-column: 1 / -1; }
