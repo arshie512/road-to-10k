@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
-    <script src="app.js" defer></script>
+    <script type="module" src="./app.js"></script>
   </head>
   <body>
     <div class="page-glow page-glow-one" aria-hidden="true"></div>
@@ -100,15 +100,19 @@
 
         <div class="wearable-note">
           <span class="wearable-icon" aria-hidden="true">⌁</span>
-          <div class="wearable-copy"><span class="mini-label">WATCH SYNC · MANUAL FOR NOW</span><p>Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs a phone companion app; support depends on the watch and its app.</p></div>
-          <span class="manual-badge"><i></i> Saved in this browser</span>
+          <div class="wearable-copy"><span class="mini-label" id="wearable-heading">WATCH SYNC · MANUAL FOR NOW</span><p id="wearable-description">Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs a phone companion app; support depends on the watch and its app.</p></div>
+          <div class="wearable-actions">
+            <span class="manual-badge" id="health-sync-badge"><i></i><span id="health-sync-label">Manual for now</span></span>
+            <button class="health-sync-button" id="sync-health-data" type="button">Why can’t I connect here?</button>
+            <p class="health-sync-status" id="health-sync-status" role="status" aria-live="polite">This browser can save manual entries. It cannot request watch-health permissions.</p>
+          </div>
         </div>
 
         <div class="activity-date-heading"><span class="mini-label">YOUR CHECK-IN</span><strong id="activity-date-label">Today</strong></div>
         <div class="activity-metrics" aria-label="Activity stats for the selected date">
           <article class="metric-card"><span class="metric-icon steps-icon" aria-hidden="true">↗</span><div><span class="metric-label">STEPS</span><strong id="activity-steps-value">—</strong><small id="activity-steps-caption">Add a daily total</small></div><span class="metric-unit">steps</span></article>
           <article class="metric-card"><span class="metric-icon calories-icon" aria-hidden="true">✳</span><div><span class="metric-label">ACTIVE CALORIES</span><strong id="activity-calories-value">—</strong><small id="activity-calories-caption">Use your watch’s estimate</small></div><span class="metric-unit">kcal</span></article>
-          <article class="metric-card"><span class="metric-icon heart-icon" aria-hidden="true">♡</span><div><span class="metric-label">HEART RATE</span><strong id="activity-heart-value">—</strong><small id="activity-heart-caption">Add a reading from your watch</small></div><span class="metric-unit">bpm</span></article>
+          <article class="metric-card"><span class="metric-icon heart-icon" aria-hidden="true">♡</span><div><span class="metric-label" id="activity-heart-label">HEART RATE</span><strong id="activity-heart-value">—</strong><small id="activity-heart-caption">Add a reading from your watch</small></div><span class="metric-unit">bpm</span></article>
         </div>
 
         <div class="activity-layout">
@@ -122,7 +126,7 @@
             </div>
             <button class="button button-primary activity-submit" type="submit">Save daily check-in <span aria-hidden="true">↗</span></button>
             <p class="activity-message" id="activity-message" role="status" aria-live="polite"></p>
-            <p class="activity-privacy">Calories are your device’s estimate. Health readings stay in this browser on this device.</p>
+            <p class="activity-privacy">Calories are your device’s estimate. Your readings stay on this device and are never uploaded.</p>
           </form>
 
           <div class="week-panel" aria-labelledby="week-title">
@@ -188,7 +192,7 @@
       <a class="wordmark footer-wordmark" href="#top"><span class="wordmark-icon" aria-hidden="true"><i></i><i></i><i></i></span><span>ROAD<span class="wordmark-divider">/</span>10K</span></a>
       <span>MADE OF SMALL WINS <i>✳</i></span>
       <a href="#top" class="back-top">BACK TO TOP ↑</a>
+      <a href="./privacypolicy.html" class="back-top">PRIVACY</a>
     </footer>
   </body>
 </html>
-

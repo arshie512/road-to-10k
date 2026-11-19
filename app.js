@@ -1,3 +1,6 @@
+import { Capacitor } from "@capacitor/core";
+import { Health } from "@capgo/capacitor-health";
+
 const STORAGE_KEY = "road-to-10k-runs-v1";
 const ACTIVITY_STORAGE_KEY = "road-to-10k-activity-v1";
 const START_STORAGE_KEY = "road-to-10k-start-date-v1";
@@ -126,7 +129,8 @@ function loadActivityRecords() {
       .map(([date, record]) => [date, {
         steps: isValidMetric(record.steps, 0, 250000) ? Number(record.steps) : null,
         calories: isValidMetric(record.calories, 0, 10000) ? Number(record.calories) : null,
-        heartRate: isValidMetric(record.heartRate, 25, 240) ? Number(record.heartRate) : null
+        heartRate: isValidMetric(record.heartRate, 25, 240) ? Number(record.heartRate) : null,
+        source: record.source === "health" ? "health" : "manual"
       }])
       .filter(([, record]) => record.steps !== null || record.calories !== null || record.heartRate !== null));
   } catch {
@@ -273,9 +277,11 @@ function renderQuote() {
   $("#daily-quote").textContent = `“${MOTIVATIONAL_LINES[quoteIndex]}”`;
 }
 
-function setActivityMetric(valueSelector, captionSelector, value, missingCaption, format = (number) => new Intl.NumberFormat("en-IN").format(number)) {
+function setActivityMetric(valueSelector, captionSelector, value, missingCaption, source, format = (number) => new Intl.NumberFormat("en-IN").format(number)) {
   $(valueSelector).textContent = value === null || value === undefined ? "—" : format(value);
-  $(captionSelector).textContent = value === null || value === undefined ? missingCaption : "Saved from your check-in";
+  $(captionSelector).textContent = value === null || value === undefined
+    ? missingCaption
+    : source === "health" ? "Synced from your health app" : "Saved from your check-in";
 }
 
 function renderActivity() {
@@ -286,9 +292,10 @@ function renderActivity() {
     ? "Today"
     : parseDate(selectedDate).toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 
-  setActivityMetric("#activity-steps-value", "#activity-steps-caption", record.steps ?? null, "Not added for this day");
-  setActivityMetric("#activity-calories-value", "#activity-calories-caption", record.calories ?? null, "Not added for this day");
-  setActivityMetric("#activity-heart-value", "#activity-heart-caption", record.heartRate ?? null, "Not added for this day", (number) => String(number));
+  setActivityMetric("#activity-steps-value", "#activity-steps-caption", record.steps ?? null, "Not added for this day", record.source);
+  setActivityMetric("#activity-calories-value", "#activity-calories-caption", record.calories ?? null, "Not added for this day", record.source);
+  $("#activity-heart-label").textContent = record.source === "health" ? "AVERAGE HEART RATE" : "HEART RATE";
+  setActivityMetric("#activity-heart-value", "#activity-heart-caption", record.heartRate ?? null, "Not added for this day", record.source, (number) => String(number));
 
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = shiftDate(selectedDate, index - 6);
@@ -358,6 +365,110 @@ function loadActivityDraft() {
   renderActivity();
 }
 
+function saveActivityRecords() {
+  try {
+    localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(activityRecords));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function mergeHealthSamples(samples, field, aggregation, changedDates) {
+  for (const sample of samples || []) {
+    const date = localDateValue(new Date(sample.startDate));
+    const rawValue = Number(sample.values?.[aggregation] ?? sample.value);
+    if (!isValidDateValue(date) || date > localDateValue(today) || !Number.isFinite(rawValue) || rawValue < 0) continue;
+
+    const record = activityRecords[date] || { steps: null, calories: null, heartRate: null, source: "health" };
+    record[field] = Math.round(rawValue);
+    record.source = "health";
+    activityRecords[date] = record;
+    changedDates.add(date);
+  }
+}
+
+function initializeHealthSync() {
+  const isNativeApp = Capacitor.isNativePlatform();
+  $("#health-sync-label").textContent = isNativeApp ? "Not connected" : "Manual for now";
+  $("#wearable-heading").textContent = isNativeApp ? "WATCH SYNC · YOUR HEALTH APP" : "WATCH SYNC · MANUAL FOR NOW";
+  $("#wearable-description").textContent = isNativeApp
+    ? "Sync daily totals from Apple Health on iPhone or Health Connect on Android. Your watch must share its readings with that health app."
+    : "Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs the Road to 10K phone app; support depends on your watch and its app.";
+  $("#sync-health-data").textContent = isNativeApp ? "Sync health data" : "Why can’t I connect here?";
+  $("#health-sync-status").textContent = isNativeApp
+    ? "Connect to request permission for steps, active calories, and heart rate. Readings stay on this device."
+    : "This browser can save manual entries. It cannot request watch-health permissions.";
+
+  $("#sync-health-data").addEventListener("click", async () => {
+    const status = $("#health-sync-status");
+    const button = $("#sync-health-data");
+    if (!Capacitor.isNativePlatform()) {
+      status.textContent = "Automatic syncing needs the installable phone app. You can still enter numbers from your watch here.";
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Connecting…";
+    status.textContent = "Checking health data access…";
+    $("#health-sync-label").textContent = "Checking…";
+    $("#health-sync-badge").classList.remove("is-connected");
+    try {
+      const availability = await Health.isAvailable();
+      if (!availability.available) {
+        $("#health-sync-label").textContent = "Unavailable";
+        status.textContent = availability.reason || "Health data access is not available on this phone.";
+        return;
+      }
+
+      await Health.requestAuthorization({ read: ["steps", "calories", "heartRate"], write: [] });
+      const startDate = parseDate(shiftDate(localDateValue(today), -6)).toISOString();
+      const endDate = new Date().toISOString();
+      const results = await Promise.allSettled([
+        Health.queryAggregated({ dataType: "steps", startDate, endDate, bucket: "day", aggregation: "sum" }),
+        Health.queryAggregated({ dataType: "calories", startDate, endDate, bucket: "day", aggregation: "sum" }),
+        Health.queryAggregated({ dataType: "heartRate", startDate, endDate, bucket: "day", aggregation: "average" })
+      ]);
+
+      const changedDates = new Set();
+      const imported = [
+        [results[0], "steps", "sum"],
+        [results[1], "calories", "sum"],
+        [results[2], "heartRate", "average"]
+      ];
+      for (const [result, field, aggregation] of imported) {
+        if (result.status === "fulfilled") mergeHealthSamples(result.value.samples, field, aggregation, changedDates);
+      }
+
+      if (changedDates.size === 0) {
+        const failed = results.find((result) => result.status === "rejected");
+        $("#health-sync-label").textContent = "No data yet";
+        status.textContent = failed
+          ? "Could not read health data. Check the app’s permissions and try again."
+          : "No readings found. Check permissions and that your watch app syncs to Apple Health or Health Connect.";
+        return;
+      }
+      if (!saveActivityRecords()) {
+        $("#health-sync-label").textContent = "Not saved";
+        status.textContent = "The readings were found, but this phone could not save them. Check available storage and try again.";
+        return;
+      }
+
+      $("#activity-date").value = localDateValue(today);
+      loadActivityDraft();
+      $("#health-sync-label").textContent = "Synced";
+      $("#health-sync-badge").classList.add("is-connected");
+      status.textContent = `Synced ${changedDates.size} ${changedDates.size === 1 ? "day" : "days"}. Your data stays on this device.`;
+    } catch {
+      $("#health-sync-label").textContent = "Not connected";
+      status.textContent = "Could not connect right now. Check permissions and try again.";
+    } finally {
+      button.disabled = false;
+      button.textContent = "Sync health data";
+    }
+  });
+}
+
 function saveRuns() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(runs));
 }
@@ -411,11 +522,10 @@ function init() {
     activityRecords[date] = {
       steps: fields.steps === "" ? null : Number(fields.steps),
       calories: fields.calories === "" ? null : Number(fields.calories),
-      heartRate: fields.heartRate === "" ? null : Number(fields.heartRate)
+      heartRate: fields.heartRate === "" ? null : Number(fields.heartRate),
+      source: "manual"
     };
-    try {
-      localStorage.setItem(ACTIVITY_STORAGE_KEY, JSON.stringify(activityRecords));
-    } catch {
+    if (!saveActivityRecords()) {
       if (previousRecord) activityRecords[date] = previousRecord;
       else delete activityRecords[date];
       $("#activity-message").textContent = "This browser could not save the check-in. Please try again.";
@@ -425,6 +535,8 @@ function init() {
     renderActivity();
     $("#activity-message").textContent = "Saved. You can edit this day any time.";
   });
+
+  initializeHealthSync();
 
   $("#next-quote").addEventListener("click", () => {
     quoteIndex = (quoteIndex + 1) % MOTIVATIONAL_LINES.length;
@@ -487,4 +599,3 @@ function init() {
 }
 
 init();
-
