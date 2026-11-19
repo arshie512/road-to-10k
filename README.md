@@ -3,10 +3,10 @@
 A small, responsive running journal built around the original `run3` and `run4` posters. The page reflects the milestones shown in those images:
 
 - Starting point: 1 km
-- December 5, 2026 checkpoint: 2–3 km
+- December 30, 2026 checkpoint by default: 2–3 km
 - Long-term goal: 10 km
 
-The countdown updates from the viewer's local date. The run log and best distance are stored in the browser's local storage; they are not sent to a server.
+Visitors can change the checkpoint date on the page. The countdown and five training milestones shift with it, and the selection is saved in that browser. The run log and best distance are also stored locally; neither is sent to a server.
 
 ## Run locally
 
@@ -20,6 +20,6 @@ The workflow in `.github/workflows/pages.yml` deploys the repository root to Git
 
 - `index.html` — page structure and copy
 - `styles.css` — responsive visual design
-- `app.js` — countdown, milestones, and local run log
+- `app.js` — editable checkpoint date, shifted milestones, countdown, and local run log
 - `assets/run3.png`, `assets/run4.png` — supplied project posters
 

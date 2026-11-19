@@ -41,7 +41,7 @@
           </div>
           <div class="hero-countdown" aria-live="polite">
             <span class="countdown-icon" aria-hidden="true">◷</span>
-            <span><b id="days-left">—</b> days to the December 5 checkpoint</span>
+            <span><b id="days-left">—</b> <span id="countdown-label">days to the checkpoint</span></span>
           </div>
         </div>
 
@@ -73,14 +73,19 @@
           </div>
           <div class="next-checkpoint">
             <div class="checkpoint-orbit" aria-hidden="true"><span>02</span><i></i></div>
-            <div class="checkpoint-copy"><span class="mini-label">NEXT CHECKPOINT</span><strong>2–3 km</strong><span>Saturday · December 5, 2026</span></div>
+            <div class="checkpoint-copy"><span class="mini-label">NEXT CHECKPOINT</span><strong>2–3 km</strong><span id="checkpoint-date-display">Wednesday · December 30, 2026</span></div>
             <a href="#plan" class="arrow-link" aria-label="See checkpoint plan">↗</a>
           </div>
         </div>
 
+        <div class="date-settings">
+          <label for="checkpoint-date"><span class="mini-label">CHOOSE YOUR CHECKPOINT DATE</span><input id="checkpoint-date" name="checkpoint-date" type="date" value="2026-12-30" /></label>
+          <div><p>Change this date any time. Your training milestones will shift with it.</p><span id="checkpoint-date-status" role="status" aria-live="polite">Saved in this browser.</span></div>
+        </div>
+
         <div class="stat-row" aria-label="Running milestones">
           <article class="stat-card"><span class="stat-number">01</span><span class="stat-label">Start where you are</span><strong>1 km</strong><small>Your baseline from the original poster</small></article>
-          <article class="stat-card stat-card-highlight"><span class="stat-number">02</span><span class="stat-label">December checkpoint</span><strong>2–3 km</strong><small>Build steadily by December 5</small></article>
+          <article class="stat-card stat-card-highlight"><span class="stat-number">02</span><span class="stat-label">Next checkpoint</span><strong>2–3 km</strong><small id="checkpoint-stat-date">Build steadily by December 30</small></article>
           <article class="stat-card"><span class="stat-number">03</span><span class="stat-label">The bigger finish</span><strong>10 km</strong><small>The long-term goal, one run at a time</small></article>
         </div>
       </section>
@@ -88,7 +93,7 @@
       <section class="section-wrap plan-section" id="plan" aria-labelledby="plan-title">
         <div class="section-heading">
           <div><p class="eyebrow">A PLAN WITH ROOM TO BREATHE</p><h2 id="plan-title">Small steps. Strong finish.</h2></div>
-          <p class="section-intro">The first checkpoint is about showing up consistently. Keep each run comfortable, listen to your body, and let the distance grow at its own pace.</p>
+          <p class="section-intro">The plan shifts with your checkpoint date. Keep each run comfortable, listen to your body, and let the distance grow at its own pace.</p>
         </div>
         <div class="plan-layout">
           <div class="timeline" id="milestone-list" aria-label="Upcoming running milestones"></div>
@@ -103,7 +108,7 @@
       </section>
 
       <section class="section-wrap source-section" aria-labelledby="source-title">
-        <div class="source-copy"><p class="eyebrow">THE FIRST PAGES</p><h2 id="source-title">A goal becomes real when you can see the next step.</h2><p>These two original posters mark the beginning: the first kilometre, a December checkpoint, and a bigger distance waiting beyond it.</p></div>
+        <div class="source-copy"><p class="eyebrow">THE FIRST PAGES</p><h2 id="source-title">A goal becomes real when you can see the next step.</h2><p>These original posters mark the beginning. Their printed dates stay as they were; the checkpoint and training plan above follow the date you choose.</p></div>
         <div class="source-gallery">
           <figure class="source-card source-card-one"><img src="assets/run3.png" alt="Original Road to 10K poster showing a 1 kilometre start, a 2–3 kilometre checkpoint, and a 10 kilometre goal" /><figcaption><span>THE FIRST VISION</span><b>01</b></figcaption></figure>
           <figure class="source-card source-card-two"><img src="assets/run4.png" alt="Original Road to 10K training poster listing the November and December running milestones" /><figcaption><span>THE FIRST PLAN</span><b>02</b></figcaption></figure>
