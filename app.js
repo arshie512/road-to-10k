@@ -5,11 +5,14 @@ const STORAGE_KEY = "road-to-10k-runs-v1";
 const ACTIVITY_STORAGE_KEY = "road-to-10k-activity-v1";
 const START_STORAGE_KEY = "road-to-10k-start-date-v1";
 const CHECKPOINT_STORAGE_KEY = "road-to-10k-checkpoint-date-v1";
+const GOAL_STORAGE_KEY = "road-to-10k-goal-distance-v1";
 const QUOTE_STORAGE_KEY = "road-to-10k-quote-v1";
 const DEFAULT_START_DATE = "2026-12-01";
 const DEFAULT_CHECKPOINT_DATE = "2026-12-30";
 const BASELINE_KM = 1;
-const GOAL_KM = 10;
+const DEFAULT_GOAL_KM = 10;
+const MIN_GOAL_KM = 1;
+const MAX_GOAL_KM = 100;
 const MOTIVATIONAL_LINES = [
   "Slow is a pace. Showing up is the win.",
   "A short run still moves you forward.",
@@ -82,6 +85,21 @@ function loadStoredDate(key, fallback) {
   }
 }
 
+function loadStoredGoalDistance() {
+  try {
+    const saved = Number(localStorage.getItem(GOAL_STORAGE_KEY));
+    return Number.isFinite(saved) && saved >= MIN_GOAL_KM && saved <= MAX_GOAL_KM
+      ? Math.round(saved * 10) / 10
+      : DEFAULT_GOAL_KM;
+  } catch {
+    return DEFAULT_GOAL_KM;
+  }
+}
+
+function formatDistance(distance) {
+  return Number.isInteger(distance) ? String(distance) : Number(distance).toFixed(1);
+}
+
 function shiftDate(value, offset) {
   const date = parseDate(value);
   date.setDate(date.getDate() + offset);
@@ -90,22 +108,24 @@ function shiftDate(value, offset) {
 
 function getMilestones() {
   const spanDays = Math.max(0, Math.round((parseDate(checkpointDate) - parseDate(startDate)) / 86400000));
+  const goalTitle = `Reach your ${formatDistance(goalDistance)} km goal`;
   if (spanDays === 0) {
-    return [{ date: checkpointDate, title: "Starting point and checkpoint", kind: "Checkpoint" }];
+    return [{ date: checkpointDate, title: goalTitle, kind: "Goal day" }];
   }
 
-  const plan = [{ offset: 0, title: "Begin from your 1 km baseline", kind: "Start" }];
-  if (spanDays >= 10) {
+  const plan = [{ offset: 0, title: `Start with your ${formatDistance(BASELINE_KM)} km baseline`, kind: "Start" }];
+  const distanceAt = (fraction) => Math.round((BASELINE_KM + (goalDistance - BASELINE_KM) * fraction) * 10) / 10;
+  if (spanDays >= 10 && goalDistance > BASELINE_KM) {
     plan.push(
-      { offset: Math.round(spanDays / 3), title: "Build toward 1.5 km", kind: "Progression" },
-      { offset: Math.round((spanDays * 2) / 3), title: "Build toward 2 km", kind: "Steady run" },
+      { offset: Math.round(spanDays / 3), title: `Build toward ${formatDistance(distanceAt(1 / 3))} km`, kind: "Progression" },
+      { offset: Math.round((spanDays * 2) / 3), title: `Build toward ${formatDistance(distanceAt(2 / 3))} km`, kind: "Steady run" },
       { offset: spanDays - 2, title: "Easy run and recovery", kind: "Recovery" },
     );
-  } else if (spanDays >= 4) {
-    plan.push({ offset: Math.floor(spanDays / 2), title: "Easy progression toward your next distance", kind: "Build" });
+  } else if (spanDays >= 4 && goalDistance > BASELINE_KM) {
+    plan.push({ offset: Math.floor(spanDays / 2), title: `Build toward ${formatDistance(distanceAt(0.5))} km`, kind: "Build" });
   }
-  if (spanDays >= 2) plan.push({ offset: spanDays - 1, title: "Rest, hydrate and prepare", kind: "Rest day" });
-  plan.push({ offset: spanDays, title: "Personal 2–3 km milestone", kind: "Checkpoint" });
+  if (spanDays >= 2 && spanDays < 10) plan.push({ offset: spanDays - 1, title: "Rest, hydrate and prepare", kind: "Rest day" });
+  plan.push({ offset: spanDays, title: goalTitle, kind: "Goal day" });
 
   return plan.map((item) => ({ ...item, date: shiftDate(startDate, item.offset) }));
 }
@@ -161,6 +181,7 @@ let activityRecords = loadActivityRecords();
 let quoteIndex = loadQuoteIndex();
 let startDate = loadStoredDate(START_STORAGE_KEY, DEFAULT_START_DATE);
 let checkpointDate = loadStoredDate(CHECKPOINT_STORAGE_KEY, DEFAULT_CHECKPOINT_DATE);
+let goalDistance = loadStoredGoalDistance();
 if (parseDate(checkpointDate) < parseDate(startDate)) {
   startDate = DEFAULT_START_DATE;
   checkpointDate = DEFAULT_CHECKPOINT_DATE;
@@ -172,10 +193,10 @@ function renderCountdown() {
   const unit = days === 1 ? "day" : "days";
   $("#days-left").textContent = delta === 0 ? "Today" : days;
   $("#countdown-label").textContent = delta === 0
-    ? "is your checkpoint"
+    ? "is your goal date"
     : delta > 0
-      ? `${unit} to the checkpoint`
-      : `${unit} since the checkpoint`;
+      ? `${unit} to your goal date`
+      : `${unit} since your goal date`;
 }
 
 function renderCheckpointDate() {
@@ -183,8 +204,8 @@ function renderCheckpointDate() {
   const fullDate = date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
   $("#start-date").value = startDate;
   $("#checkpoint-date").value = checkpointDate;
-  $("#checkpoint-date-display").textContent = fullDate.replace(",", " ·");
-  $("#checkpoint-stat-date").textContent = `Build steadily by ${date.toLocaleDateString("en-IN", { day: "numeric", month: "long" })}`;
+  $("#checkpoint-date-display").textContent = `Goal date · ${fullDate.replace(",", " ·")}`;
+  $("#goal-date-stat").textContent = date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 }
 
 function renderMilestones() {
@@ -224,11 +245,23 @@ function bestDistance() {
 
 function renderProgress() {
   const best = bestDistance();
-  const percent = Math.min(100, (best / GOAL_KM) * 100);
+  const percent = Math.min(100, (best / goalDistance) * 100);
+  const formattedGoal = formatDistance(goalDistance);
   $("#best-distance").textContent = best.toFixed(1);
+  $("#goal-distance-display").textContent = `${formattedGoal} KM`;
+  $("#goal-distance-summary").textContent = `${formattedGoal} km`;
+  $("#goal-distance-stat").textContent = `${formattedGoal} km`;
+  $("#goal-start-label").textContent = `${formatDistance(BASELINE_KM)} km`;
+  $("#goal-end-label").textContent = `${formattedGoal} km`;
   $("#goal-progress-fill").style.width = `${Math.max(percent, 1.5)}%`;
-  $("#goal-progress").setAttribute("aria-valuenow", best.toFixed(1));
-  $("#progress-percent").textContent = `${Math.round(percent)}% of the distance`;
+  $("#goal-progress").setAttribute("aria-valuenow", Math.min(best, goalDistance).toFixed(1));
+  $("#goal-progress").setAttribute("aria-valuemax", String(goalDistance));
+  $("#goal-progress").setAttribute("aria-label", `Longest run toward your ${formattedGoal} kilometre goal`);
+  $("#goal-progress").setAttribute("aria-valuetext", `${best.toFixed(1)} kilometres run toward a ${formattedGoal} kilometre goal`);
+  $("#progress-percent").textContent = percent >= 100 ? "Goal reached · keep building" : `${Math.floor(percent)}% of your goal`;
+  document.querySelectorAll("[data-goal-distance]").forEach((button) => {
+    button.setAttribute("aria-pressed", String(Number(button.dataset.goalDistance) === goalDistance));
+  });
 }
 
 function renderRuns() {
@@ -394,7 +427,7 @@ function initializeHealthSync() {
   $("#wearable-heading").textContent = isNativeApp ? "WATCH SYNC · YOUR HEALTH APP" : "WATCH SYNC · MANUAL FOR NOW";
   $("#wearable-description").textContent = isNativeApp
     ? "Sync daily totals from Apple Health on iPhone or Health Connect on Android. Your watch must share its readings with that health app."
-    : "Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs the Road to 10K phone app; support depends on your watch and its app.";
+    : "Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs the Road to 10K+ phone app; support depends on your watch and its app.";
   $("#sync-health-data").textContent = isNativeApp ? "Sync health data" : "Why can’t I connect here?";
   $("#health-sync-status").textContent = isNativeApp
     ? "Connect to request permission for steps, active calories, and heart rate. Readings stay on this device."
@@ -476,8 +509,10 @@ function saveRuns() {
 function init() {
   const startInput = $("#start-date");
   const checkpointInput = $("#checkpoint-date");
+  const goalInput = $("#goal-distance");
   startInput.value = startDate;
   checkpointInput.value = checkpointDate;
+  goalInput.value = formatDistance(goalDistance);
   renderCountdown();
   renderCheckpointDate();
   renderMilestones();
@@ -575,6 +610,33 @@ function init() {
   startInput.addEventListener("change", handleDateRangeChange);
   checkpointInput.addEventListener("change", handleDateRangeChange);
 
+  const updateGoalDistance = () => {
+    const nextGoal = Number(goalInput.value);
+    if (!Number.isFinite(nextGoal) || nextGoal < MIN_GOAL_KM || nextGoal > MAX_GOAL_KM) {
+      goalInput.value = formatDistance(goalDistance);
+      $("#goal-distance-status").textContent = `Choose a goal from ${MIN_GOAL_KM} to ${MAX_GOAL_KM} km.`;
+      return;
+    }
+
+    goalDistance = Math.round(nextGoal * 10) / 10;
+    goalInput.value = formatDistance(goalDistance);
+    try {
+      localStorage.setItem(GOAL_STORAGE_KEY, String(goalDistance));
+      $("#goal-distance-status").textContent = "Distance goal saved in this browser.";
+    } catch {
+      $("#goal-distance-status").textContent = "Distance goal updated for this visit.";
+    }
+    renderProgress();
+    renderMilestones();
+  };
+  goalInput.addEventListener("change", updateGoalDistance);
+  document.querySelectorAll("[data-goal-distance]").forEach((button) => {
+    button.addEventListener("click", () => {
+      goalInput.value = button.dataset.goalDistance;
+      updateGoalDistance();
+    });
+  });
+
   const dateInput = $("#run-date");
   const now = new Date();
   dateInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -599,3 +661,4 @@ function init() {
 }
 
 init();
+

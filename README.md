@@ -1,20 +1,21 @@
-# Road to 10K
+# Road to 10K+
 
-A small, responsive running journal built around the original `run3` and `run4` posters. The page reflects the milestones shown in those images:
+A responsive running journal inspired by the original `run3` and `run4` posters. The poster's 10K goal is the starting idea; each visitor can set a personal goal from 1 km to 100 km.
 
-- Starting point: 1 km
-- December 1–30, 2026 date range by default, with a 2–3 km checkpoint on December 30
-- Long-term goal: 10 km
+## Personalise your plan
 
-Visitors can change both the start and checkpoint dates on the page. The countdown and training milestones adjust to the selected range, and the dates are saved in that browser. The run log and best distance are also stored locally; neither is sent to a server.
+- Change the start date and goal date whenever you need to.
+- Choose a distance goal directly or use the 5K, 10K, half-marathon, and marathon quick picks.
+- Watch the countdown, progress bar, goal summaries, and training milestones update to match your choices.
+- Save your goal and dates in the current browser. They are not sent to a server.
 
-The daily activity check-in lets visitors save steps, active calories, and a heart-rate reading for a selected day. It shows a seven-day steps view and keeps records in the current browser. Motivational lines rotate by day, and visitors can choose another line at any time.
+The run log and daily activity check-in are also saved locally. Daily activity includes steps, active calories, heart rate, and a seven-day step view. Motivational lines rotate daily, with an option to choose another.
 
 ## Wearable data
 
-The website keeps manual entry for browsers. The companion app can read daily steps, active calories, and average heart rate from Apple Health on iPhone or Health Connect on Android, after the user grants read access. The user taps **Sync health data** to refresh the last seven days. Data stays in local app storage and is not uploaded to a server.
+The website supports manual entry. The phone companion can read daily steps, active calories, and average heart rate from Apple Health on iPhone or Health Connect on Android after the user grants read access. Tap **Sync health data** to refresh the last seven days. Health readings stay in local app storage and are not uploaded.
 
-The watch must first share its readings with Apple Health or Health Connect. Support depends on the watch model and its companion app, so direct connection to every watch is not guaranteed. The phone app requests read access only; it does not write health data.
+A watch must first share its readings with Apple Health or Health Connect. Support depends on the watch model and its companion app, so direct connection to every watch is not guaranteed. The phone app requests read access only; it does not write health data.
 
 ## Run locally
 
@@ -32,9 +33,10 @@ The workflow in `.github/workflows/pages.yml` builds the website and deploys `di
 
 ## Project files
 
-- `index.html` — page structure and copy
+- `index.html` — website layout and copy
 - `styles.css` — responsive visual design
-- `app.js` — editable date range, running plan, run log, activity check-in, HealthKit/Health Connect sync, and motivational lines
+- `app.js` — personal goal and date settings, progress, milestones, run log, daily activity, health sync, and motivational lines
 - `assets/run3.png`, `assets/run4.png` — supplied project posters
-- `scripts/prepare-native.mjs` — minimal platform health permissions and privacy setup
-- `public/privacypolicy.html` — health-data permission privacy notice
+- `scripts/prepare-native.mjs` — health permissions and privacy setup for phone builds
+- `public/privacypolicy.html` — health-data permission notice
+

@@ -65,7 +65,7 @@ async function prepareIos() {
     if (plist.includes("NSHealthShareUsageDescription")) return plist;
     return plist.replace(
       "</dict>",
-      "\t<key>NSHealthShareUsageDescription</key>\n\t<string>Road to 10K reads your steps, active calories, and heart rate to show your daily activity. Your health data stays on this device.</string>\n</dict>"
+      "\t<key>NSHealthShareUsageDescription</key>\n\t<string>Road to 10K+ reads your steps, active calories, and heart rate to show your daily activity. Your health data stays on this device.</string>\n</dict>"
     );
   });
 
@@ -98,3 +98,4 @@ if (platform === "android") {
 }
 
 console.log(`Prepared the ${platform} health permissions and privacy settings.`);
+

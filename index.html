@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07121f" />
-    <meta name="description" content="A personal running journal: from the first kilometre to a 10K finish, one steady run at a time." />
-    <title>Road to 10K — Every step counts</title>
+    <meta name="description" content="A personal running journal with an editable distance goal and finish date. Start at 1 km and build toward 10K and beyond." />
+    <title>Road to 10K+ — Every step counts</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -17,9 +17,9 @@
     <div class="page-glow page-glow-two" aria-hidden="true"></div>
 
     <header class="site-header">
-      <a class="wordmark" href="#top" aria-label="Road to 10K home">
+      <a class="wordmark" href="#top" aria-label="Road to 10K plus home">
         <span class="wordmark-icon" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>ROAD<span class="wordmark-divider">/</span>10K</span>
+        <span>ROAD<span class="wordmark-divider">/</span>10K+</span>
       </a>
       <nav class="main-nav" aria-label="Main navigation">
         <a href="#progress">Progress</a>
@@ -27,6 +27,7 @@
         <a href="#plan">The plan</a>
         <a href="#run-log">Run log</a>
       </nav>
+      <a class="mobile-activity-action" href="#daily-stats">Activity <b aria-hidden="true">↓</b></a>
       <a class="header-action" href="#run-log"><span>Log a run</span><b aria-hidden="true">↗</b></a>
     </header>
 
@@ -35,14 +36,15 @@
         <div class="hero-copy">
           <p class="eyebrow"><span class="live-dot"></span> THE DISTANCE IS BUILT, NOT GIVEN</p>
           <h1 id="hero-title">One kilometre<br />at a <em>time.</em></h1>
-          <p class="hero-description">A first kilometre becomes a habit. A habit becomes a distance. This is the honest, steady road from 1K to 10K.</p>
+          <p class="hero-description">Set a distance goal and finish date that feel right for you. Start where you are, keep a simple log, and build toward 10K and beyond.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="#run-log">Add your latest run <span aria-hidden="true">↗</span></a>
+            <a class="text-link" href="#daily-stats">Track daily activity <span aria-hidden="true">↓</span></a>
             <a class="text-link" href="#plan">See the training plan <span aria-hidden="true">↓</span></a>
           </div>
           <div class="hero-countdown" aria-live="polite">
             <span class="countdown-icon" aria-hidden="true">◷</span>
-            <span><b id="days-left">—</b> <span id="countdown-label">days to the checkpoint</span></span>
+            <span><b id="days-left">—</b> <span id="countdown-label">days to your goal date</span></span>
           </div>
         </div>
 
@@ -65,30 +67,40 @@
           <div class="progress-main">
             <div class="progress-kicker"><span class="live-dot"></span> LONGEST RUN</div>
             <div class="distance-readout"><strong id="best-distance">1.0</strong><span>km</span></div>
-            <div class="distance-caption"><span>START</span><span>ULTIMATE GOAL <b>10.0 KM</b></span></div>
-            <div class="track" role="progressbar" aria-label="Longest run toward the 10 kilometre goal" aria-valuemin="0" aria-valuemax="10" aria-valuenow="1" id="goal-progress">
+            <div class="distance-caption"><span>START</span><span>YOUR DISTANCE GOAL <b id="goal-distance-display">10 KM</b></span></div>
+            <div class="track" role="progressbar" aria-label="Longest run toward your 10 kilometre goal" aria-valuemin="0" aria-valuemax="10" aria-valuenow="1" id="goal-progress">
               <div class="track-fill" id="goal-progress-fill"><span class="track-marker"></span></div>
               <span class="track-tick tick-one"></span><span class="track-tick tick-two"></span><span class="track-tick tick-three"></span>
             </div>
-            <div class="track-legend"><span>1 km</span><span id="progress-percent">10% of the distance</span><span>10 km</span></div>
+            <div class="track-legend"><span id="goal-start-label">1 km</span><span id="progress-percent">10% of your goal</span><span id="goal-end-label">10 km</span></div>
           </div>
           <div class="next-checkpoint">
             <div class="checkpoint-orbit" aria-hidden="true"><span>02</span><i></i></div>
-            <div class="checkpoint-copy"><span class="mini-label">NEXT CHECKPOINT</span><strong>2–3 km</strong><span id="checkpoint-date-display">Wednesday · December 30, 2026</span></div>
-            <a href="#plan" class="arrow-link" aria-label="See checkpoint plan">↗</a>
+            <div class="checkpoint-copy"><span class="mini-label">YOUR DISTANCE GOAL</span><strong id="goal-distance-summary">10 km</strong><span id="checkpoint-date-display">Goal date · Wednesday · 30 December 2026</span></div>
+            <a href="#plan" class="arrow-link" aria-label="See your plan">↗</a>
           </div>
         </div>
 
         <div class="date-settings">
           <label for="start-date"><span class="mini-label">START DATE</span><input id="start-date" name="start-date" type="date" value="2026-12-01" /></label>
-          <label for="checkpoint-date"><span class="mini-label">END / CHECKPOINT DATE</span><input id="checkpoint-date" name="checkpoint-date" type="date" value="2026-12-30" /></label>
-          <div><p>Choose your date range. The training plan will adjust to fit.</p><span id="checkpoint-date-status" role="status" aria-live="polite">Saved in this browser.</span></div>
+          <label for="checkpoint-date"><span class="mini-label">TARGET DATE</span><input id="checkpoint-date" name="checkpoint-date" type="date" value="2026-12-30" /></label>
+          <div class="goal-distance-field">
+            <label for="goal-distance"><span class="mini-label">GOAL DISTANCE</span></label>
+            <div class="goal-distance-input"><input id="goal-distance" name="goal-distance" type="number" min="1" max="100" step="0.1" inputmode="decimal" value="10" aria-describedby="goal-distance-help goal-distance-status" /><span>km</span></div>
+            <div class="goal-presets" aria-label="Popular distance goals">
+              <button type="button" data-goal-distance="5" aria-pressed="false">5K</button>
+              <button type="button" data-goal-distance="10" aria-pressed="true">10K</button>
+              <button type="button" data-goal-distance="21.1" aria-pressed="false">21.1K</button>
+              <button type="button" data-goal-distance="42.2" aria-pressed="false">42.2K</button>
+            </div>
+          </div>
+          <div class="goal-range-copy"><p id="goal-distance-help">Choose your dates and a distance from 1 to 100 km. Your plan updates automatically.</p><span id="checkpoint-date-status" role="status" aria-live="polite">Dates saved in this browser.</span><span id="goal-distance-status" role="status" aria-live="polite">Distance goal saved in this browser.</span></div>
         </div>
 
         <div class="stat-row" aria-label="Running milestones">
           <article class="stat-card"><span class="stat-number">01</span><span class="stat-label">Start where you are</span><strong>1 km</strong><small>Your baseline from the original poster</small></article>
-          <article class="stat-card stat-card-highlight"><span class="stat-number">02</span><span class="stat-label">Next checkpoint</span><strong>2–3 km</strong><small id="checkpoint-stat-date">Build steadily by December 30</small></article>
-          <article class="stat-card"><span class="stat-number">03</span><span class="stat-label">The bigger finish</span><strong>10 km</strong><small>The long-term goal, one run at a time</small></article>
+          <article class="stat-card stat-card-highlight"><span class="stat-number">02</span><span class="stat-label">Your goal date</span><strong id="goal-date-stat">30 Dec</strong><small>Your finish date can change anytime</small></article>
+          <article class="stat-card"><span class="stat-number">03</span><span class="stat-label">Your distance goal</span><strong id="goal-distance-stat">10 km</strong><small>Choose up to 100 km and adjust as you go</small></article>
         </div>
       </section>
 
@@ -141,7 +153,7 @@
       <section class="section-wrap plan-section" id="plan" aria-labelledby="plan-title">
         <div class="section-heading">
           <div><p class="eyebrow">A PLAN WITH ROOM TO BREATHE</p><h2 id="plan-title">Small steps. Strong finish.</h2></div>
-          <p class="section-intro">The plan shifts with your checkpoint date. Keep each run comfortable, listen to your body, and let the distance grow at its own pace.</p>
+          <p class="section-intro">Your milestones adjust to the distance goal and date you choose. Keep each run comfortable, listen to your body, and let the distance grow at its own pace.</p>
         </div>
         <div class="plan-layout">
           <div class="timeline" id="milestone-list" aria-label="Upcoming running milestones"></div>
@@ -151,7 +163,7 @@
             <blockquote id="daily-quote" aria-live="polite">“Every step counts.”</blockquote>
             <p>There is no perfect pace here. The goal is to return to the road, recover well, and take the next small step.</p>
             <button class="quote-next" id="next-quote" type="button">Another line <span aria-hidden="true">↻</span></button>
-            <span class="note-signature">— ROAD / 10K</span>
+            <span class="note-signature">— ROAD / 10K+</span>
           </aside>
         </div>
       </section>
@@ -189,10 +201,11 @@
     </main>
 
     <footer class="site-footer section-wrap">
-      <a class="wordmark footer-wordmark" href="#top"><span class="wordmark-icon" aria-hidden="true"><i></i><i></i><i></i></span><span>ROAD<span class="wordmark-divider">/</span>10K</span></a>
+      <a class="wordmark footer-wordmark" href="#top"><span class="wordmark-icon" aria-hidden="true"><i></i><i></i><i></i></span><span>ROAD<span class="wordmark-divider">/</span>10K+</span></a>
       <span>MADE OF SMALL WINS <i>✳</i></span>
       <a href="#top" class="back-top">BACK TO TOP ↑</a>
       <a href="./privacypolicy.html" class="back-top">PRIVACY</a>
     </footer>
   </body>
 </html>
+

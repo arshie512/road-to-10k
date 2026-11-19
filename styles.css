@@ -36,6 +36,7 @@ button, input { font: inherit; }
 .main-nav { display: flex; gap: 36px; color: #a9b8c5; font-size: 12px; }
 .main-nav a, .text-link, .back-top { transition: color .2s ease; }
 .main-nav a:hover, .text-link:hover, .back-top:hover { color: var(--cyan); }
+.mobile-activity-action { display: none; }
 .header-action { min-width: 118px; display: inline-flex; align-items: center; justify-content: center; gap: 16px; padding: 10px 12px 10px 17px; border: 1px solid rgba(91, 231, 238, .35); border-radius: 3px; font-size: 11px; font-weight: 700; }
 .header-action b { color: var(--cyan); font-size: 16px; }
 
@@ -92,14 +93,23 @@ button, input { font: inherit; }
 .track-legend span:nth-child(2) { color: var(--cyan); }
 .next-checkpoint { position: relative; display: flex; align-items: center; justify-content: center; gap: 21px; padding: 30px; border-left: 1px solid var(--line); overflow: hidden; }
 .next-checkpoint::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 90% 4%, rgba(113, 93, 198, .14), transparent 45%); }
-.date-settings { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.2fr); align-items: end; gap: 15px; margin-top: 12px; padding: 14px 18px; border: 1px solid var(--line); background: rgba(8, 22, 35, .58); }
+.date-settings { display: grid; grid-template-columns: minmax(125px, .85fr) minmax(125px, .85fr) minmax(190px, 1.15fr) minmax(190px, 1.45fr); align-items: end; gap: 15px; margin-top: 12px; padding: 16px 18px; border: 1px solid var(--line); background: rgba(8, 22, 35, .58); }
 .date-settings label { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
 .date-settings .mini-label { white-space: nowrap; }
 .date-settings input { width: 100%; min-width: 0; min-height: 35px; padding: 0 9px; border: 1px solid rgba(91, 231, 238, .3); outline: 0; color: #d8e3ea; color-scheme: dark; background: rgba(4, 14, 24, .7); font-family: var(--mono); font-size: 10px; }
 .date-settings input:focus { border-color: rgba(91, 231, 238, .7); }
-.date-settings > div { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
-.date-settings p { margin: 0; color: #8fa3b2; font-size: 9px; }
-.date-settings [role="status"] { color: #6f8999; font-family: var(--mono); font-size: 8px; }
+.goal-distance-field { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+.goal-distance-field > label { cursor: pointer; }
+.goal-distance-input { display: flex; min-width: 0; }
+.goal-distance-input input { border-right: 0; }
+.goal-distance-input > span { min-width: 42px; display: grid; place-items: center; border: 1px solid rgba(91, 231, 238, .3); color: #8fa3b2; background: rgba(4, 14, 24, .7); font-family: var(--mono); font-size: 10px; }
+.goal-presets { display: flex; gap: 5px; }
+.goal-presets button { flex: 1; min-width: 0; min-height: 25px; padding: 3px 5px; border: 1px solid var(--line); border-radius: 3px; color: #8fa3b2; background: rgba(4, 14, 24, .45); font-family: var(--mono); font-size: 8px; cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease; }
+.goal-presets button:hover, .goal-presets button[aria-pressed="true"] { border-color: rgba(91, 231, 238, .55); color: var(--cyan); background: rgba(91, 231, 238, .08); }
+.goal-presets button:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.goal-range-copy { display: flex; grid-column: 1 / -1; flex-direction: column; align-items: flex-start; gap: 6px; }
+.goal-range-copy p { margin: 0; color: #8fa3b2; font-size: 10px; line-height: 1.5; }
+.goal-range-copy [role="status"] { color: #6f8999; font-family: var(--mono); font-size: 8px; }
 .checkpoint-orbit { width: 66px; height: 66px; position: relative; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid rgba(91, 231, 238, .65); border-radius: 50%; color: var(--cyan); font-family: var(--mono); font-size: 12px; box-shadow: inset 0 0 20px rgba(91, 231, 238, .08), 0 0 24px rgba(91, 231, 238, .09); }
 .checkpoint-orbit::before, .checkpoint-orbit::after { content: ""; position: absolute; border: 1px solid rgba(97, 163, 241, .48); border-radius: 50%; transform: rotate(-40deg); }
 .checkpoint-orbit::before { inset: 8px -6px; }.checkpoint-orbit::after { inset: -5px 11px; border-color: rgba(188, 118, 255, .45); }
@@ -249,7 +259,8 @@ button, input { font: inherit; }
   .progress-panel { grid-template-columns: 1.2fr .8fr; }
   .activity-layout { grid-template-columns: 1fr; }
   .date-settings { grid-template-columns: 1fr 1fr; }
-  .date-settings > div { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
+  .goal-distance-field { grid-column: 1 / -1; }
+  .goal-range-copy { grid-column: 1 / -1; }
   .progress-main { padding-inline: 26px; }
   .next-checkpoint { padding-inline: 19px; gap: 14px; }
   .plan-layout { grid-template-columns: 1.1fr .9fr; gap: 22px; }
@@ -262,6 +273,7 @@ button, input { font: inherit; }
   .section-wrap, .site-header { width: calc(100% - 36px); }
   .site-header { height: 68px; }
   .main-nav { display: none; }
+  .mobile-activity-action { display: inline-flex; align-items: center; gap: 4px; color: var(--cyan); font-size: 10px; font-weight: 700; }
   .header-action { min-width: 105px; padding: 8px 10px 8px 12px; gap: 10px; }
   .hero { display: flex; flex-direction: column; align-items: stretch; gap: 34px; padding-block: 55px 54px; }
   .hero-copy { max-width: none; }
@@ -277,9 +289,11 @@ button, input { font: inherit; }
   .progress-panel { grid-template-columns: 1fr; }
   .progress-main { padding: 25px 21px 23px; }
   .next-checkpoint { min-height: 130px; justify-content: flex-start; padding-inline: 25px; border-left: 0; border-top: 1px solid var(--line); }
-  .date-settings { grid-template-columns: 1fr; gap: 12px; padding: 15px; }
+  .date-settings { grid-template-columns: 1fr; gap: 14px; padding: 15px; }
   .date-settings input { min-height: 41px; }
-  .date-settings > div { grid-column: auto; align-items: flex-start; flex-direction: column; text-align: left; }
+  .goal-distance-field, .goal-range-copy { grid-column: auto; }
+  .goal-distance-input > span { min-height: 41px; }
+  .goal-presets button { min-height: 34px; font-size: 9px; }
   .stat-row { grid-template-columns: 1fr; gap: 8px; }
   .stat-card { min-height: 126px; padding: 19px 21px; }
   .stat-card strong { font-size: 25px; }
@@ -319,3 +333,4 @@ button, input { font: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
