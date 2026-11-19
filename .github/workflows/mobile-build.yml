@@ -1,4 +1,4 @@
-name: Build phone apps
+name: Build Android app
 
 on:
   push:
@@ -62,33 +62,4 @@ jobs:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
-  ios:
-    name: iOS simulator app
-    runs-on: macos-latest
-    steps:
-      - name: Check out project
-        uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - name: Install project dependencies
-        run: npm ci
-      - name: Build web app
-        run: npm run build
-      - name: Generate iOS project
-        run: npx cap add ios
-      - name: Set HealthKit permissions and usage text
-        run: node scripts/prepare-native.mjs ios
-      - name: Sync iOS project
-        run: npx cap sync ios
-      - name: Build iOS simulator app
-        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
-      - name: Upload iOS simulator app
-        uses: actions/upload-artifact@v4
-        with:
-          name: road-to-10k-ios-simulator
-          path: build/Build/Products/Debug-iphonesimulator/App.app
-          if-no-files-found: error
 

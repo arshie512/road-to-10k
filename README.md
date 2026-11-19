@@ -15,7 +15,7 @@ The run log and daily activity check-in are also saved locally. Daily activity i
 
 The website supports manual entry. In the phone companion, connecting is optional: users can choose **Connect health app** or enter numbers manually. After read access is granted, **Sync health data** refreshes the last seven days only when tapped. There is no real-time or background syncing. Health readings stay in local app storage and are not uploaded.
 
-A watch must first share its readings with Apple Health or Health Connect. Support depends on the watch model and its companion app, so direct connection to every watch is not guaranteed. The phone app requests read access only; it does not write health data.
+A watch must first share its readings with Health Connect on Android. Support depends on the watch model and its companion app, so direct connection to every watch is not guaranteed. The phone app requests read access only; it does not write health data.
 
 ## Run locally
 
@@ -23,9 +23,9 @@ Run `npm ci`, then `npm run start` and open the local address shown in the termi
 
 ## Phone companion
 
-Generate a native project with `npx cap add android` or `npx cap add ios`, then run `node scripts/prepare-native.mjs android` or `node scripts/prepare-native.mjs ios` for the required health permissions and privacy settings. Use `npm run cap:sync` after website changes. Open the generated project in Android Studio or Xcode to build locally. Android builds need the Android SDK and Java 21. iOS device builds need Xcode and an Apple signing setup with the HealthKit capability enabled.
+The phone companion currently targets Android only. Generate its native project with `npx cap add android`, then run `node scripts/prepare-native.mjs android` for the required Health Connect permissions and privacy settings. Use `npm run cap:sync` after website changes. Open the generated project in Android Studio to build locally; Android builds need the Android SDK and Java 21.
 
-The **Build phone apps** workflow builds an Android debug APK and an iOS simulator app on GitHub Actions. The iOS simulator file is not installable on a physical iPhone; publishing an iPhone app requires Apple signing and a developer account.
+The **Build Android app** workflow builds an Android debug APK on GitHub Actions. It is a test build, not an app-store release.
 
 ## Publish with GitHub Pages
 

@@ -436,7 +436,7 @@ function initializeHealthSync() {
   $("#health-sync-label").textContent = isNativeApp ? "Not connected" : "Manual entry";
   $("#wearable-heading").textContent = isNativeApp ? "WATCH SYNC · OPTIONAL" : "TRACKING · YOUR CHOICE";
   $("#wearable-description").textContent = isNativeApp
-    ? "Connect Apple Health or Health Connect if you want. Readings are accessed only when you tap to sync—there is no real-time or background tracking. You can enter numbers manually instead."
+    ? "Connect Health Connect if you want. Readings are accessed only when you tap to sync—there is no real-time or background tracking. You can enter numbers manually instead."
     : "Manual entry works on this website. Watch syncing is optional in the phone app and happens only when you tap to sync—never in real time.";
   button.hidden = !isNativeApp;
   button.textContent = "Connect health app";
@@ -491,7 +491,7 @@ function initializeHealthSync() {
         $("#health-sync-label").textContent = "No data yet";
         status.textContent = failed
           ? "Could not read health data. Check the app’s permissions and try again."
-          : "No readings found. Check permissions and that your watch app syncs to Apple Health or Health Connect.";
+          : "No readings found. Check permissions and that your watch app syncs to Health Connect.";
         return;
       }
       if (!saveActivityRecords()) {

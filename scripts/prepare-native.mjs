@@ -60,41 +60,10 @@ async function prepareAndroid() {
   });
 }
 
-async function prepareIos() {
-  await edit("ios/App/App/Info.plist", (plist) => {
-    if (plist.includes("NSHealthShareUsageDescription")) return plist;
-    return plist.replace(
-      "</dict>",
-      "\t<key>NSHealthShareUsageDescription</key>\n\t<string>Road to 10K+ reads your steps, active calories, and heart rate to show your daily activity. Your health data stays on this device.</string>\n</dict>"
-    );
-  });
-
-  const entitlements = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-\t<key>com.apple.developer.healthkit</key>
-\t<true/>
-</dict>
-</plist>
-`;
-  await writeFile(path.join(root, "ios/App/App/App.entitlements"), entitlements, "utf8");
-
-  await edit("ios/App/App.xcodeproj/project.pbxproj", (project) => {
-    const marker = "ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;";
-    if (project.includes("CODE_SIGN_ENTITLEMENTS = App/App.entitlements;")) return project;
-    const occurrences = project.split(marker).length - 1;
-    if (occurrences < 2) throw new Error("Could not find both iOS app build configurations.");
-    return project.replaceAll(marker, `${marker}\n\t\t\t\tCODE_SIGN_ENTITLEMENTS = App/App.entitlements;`);
-  });
-}
-
 if (platform === "android") {
   await prepareAndroid();
-} else if (platform === "ios") {
-  await prepareIos();
 } else {
-  throw new Error("Choose a native platform: android or ios.");
+  throw new Error("This companion app currently supports Android only.");
 }
 
 console.log(`Prepared the ${platform} health permissions and privacy settings.`);
