@@ -115,14 +115,19 @@ function getMilestones() {
 
   const plan = [{ offset: 0, title: `Start with your ${formatDistance(BASELINE_KM)} km baseline`, kind: "Start" }];
   const distanceAt = (fraction) => Math.round((BASELINE_KM + (goalDistance - BASELINE_KM) * fraction) * 10) / 10;
+  const plannedDistances = new Set([BASELINE_KM, goalDistance]);
+  const addBuildMilestone = (offset, fraction, kind) => {
+    const distance = distanceAt(fraction);
+    if (distance <= BASELINE_KM || distance >= goalDistance || plannedDistances.has(distance)) return;
+    plannedDistances.add(distance);
+    plan.push({ offset, title: `Build toward ${formatDistance(distance)} km`, kind });
+  };
   if (spanDays >= 10 && goalDistance > BASELINE_KM) {
-    plan.push(
-      { offset: Math.round(spanDays / 3), title: `Build toward ${formatDistance(distanceAt(1 / 3))} km`, kind: "Progression" },
-      { offset: Math.round((spanDays * 2) / 3), title: `Build toward ${formatDistance(distanceAt(2 / 3))} km`, kind: "Steady run" },
-      { offset: spanDays - 2, title: "Easy run and recovery", kind: "Recovery" },
-    );
+    addBuildMilestone(Math.round(spanDays / 3), 1 / 3, "Progression");
+    addBuildMilestone(Math.round((spanDays * 2) / 3), 2 / 3, "Steady run");
+    plan.push({ offset: spanDays - 2, title: "Easy run and recovery", kind: "Recovery" });
   } else if (spanDays >= 4 && goalDistance > BASELINE_KM) {
-    plan.push({ offset: Math.floor(spanDays / 2), title: `Build toward ${formatDistance(distanceAt(0.5))} km`, kind: "Build" });
+    addBuildMilestone(Math.floor(spanDays / 2), 0.5, "Build");
   }
   if (spanDays >= 2 && spanDays < 10) plan.push({ offset: spanDays - 1, title: "Rest, hydrate and prepare", kind: "Rest day" });
   plan.push({ offset: spanDays, title: goalTitle, kind: "Goal day" });
