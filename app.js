@@ -1,16 +1,10 @@
 const STORAGE_KEY = "road-to-10k-runs-v1";
+const START_STORAGE_KEY = "road-to-10k-start-date-v1";
 const CHECKPOINT_STORAGE_KEY = "road-to-10k-checkpoint-date-v1";
+const DEFAULT_START_DATE = "2026-12-01";
 const DEFAULT_CHECKPOINT_DATE = "2026-12-30";
 const BASELINE_KM = 1;
 const GOAL_KM = 10;
-
-const milestonePlan = [
-  { offset: -14, title: "Build toward 1.5 km", kind: "Easy progression" },
-  { offset: -7, title: "Build toward 2 km", kind: "Steady run" },
-  { offset: -3, title: "Easy run and recovery", kind: "Recovery" },
-  { offset: -1, title: "Rest, hydrate and prepare", kind: "Rest day" },
-  { offset: 0, title: "Personal 2–3 km milestone", kind: "Checkpoint" },
-];
 
 const $ = (selector) => document.querySelector(selector);
 const today = atMidnight(new Date());
@@ -38,12 +32,12 @@ function isValidDateValue(value) {
     && date.getDate() === day;
 }
 
-function loadCheckpointDate() {
+function loadStoredDate(key, fallback) {
   try {
-    const saved = localStorage.getItem(CHECKPOINT_STORAGE_KEY);
-    return saved && isValidDateValue(saved) ? saved : DEFAULT_CHECKPOINT_DATE;
+    const saved = localStorage.getItem(key);
+    return saved && isValidDateValue(saved) ? saved : fallback;
   } catch {
-    return DEFAULT_CHECKPOINT_DATE;
+    return fallback;
   }
 }
 
@@ -54,10 +48,25 @@ function shiftDate(value, offset) {
 }
 
 function getMilestones() {
-  return milestonePlan.map((item) => ({
-    ...item,
-    date: shiftDate(checkpointDate, item.offset),
-  }));
+  const spanDays = Math.max(0, Math.round((parseDate(checkpointDate) - parseDate(startDate)) / 86400000));
+  if (spanDays === 0) {
+    return [{ date: checkpointDate, title: "Starting point and checkpoint", kind: "Checkpoint" }];
+  }
+
+  const plan = [{ offset: 0, title: "Begin from your 1 km baseline", kind: "Start" }];
+  if (spanDays >= 10) {
+    plan.push(
+      { offset: Math.round(spanDays / 3), title: "Build toward 1.5 km", kind: "Progression" },
+      { offset: Math.round((spanDays * 2) / 3), title: "Build toward 2 km", kind: "Steady run" },
+      { offset: spanDays - 2, title: "Easy run and recovery", kind: "Recovery" },
+    );
+  } else if (spanDays >= 4) {
+    plan.push({ offset: Math.floor(spanDays / 2), title: "Easy progression toward your next distance", kind: "Build" });
+  }
+  if (spanDays >= 2) plan.push({ offset: spanDays - 1, title: "Rest, hydrate and prepare", kind: "Rest day" });
+  plan.push({ offset: spanDays, title: "Personal 2–3 km milestone", kind: "Checkpoint" });
+
+  return plan.map((item) => ({ ...item, date: shiftDate(startDate, item.offset) }));
 }
 
 function loadRuns() {
@@ -70,7 +79,12 @@ function loadRuns() {
 }
 
 let runs = loadRuns();
-let checkpointDate = loadCheckpointDate();
+let startDate = loadStoredDate(START_STORAGE_KEY, DEFAULT_START_DATE);
+let checkpointDate = loadStoredDate(CHECKPOINT_STORAGE_KEY, DEFAULT_CHECKPOINT_DATE);
+if (parseDate(checkpointDate) < parseDate(startDate)) {
+  startDate = DEFAULT_START_DATE;
+  checkpointDate = DEFAULT_CHECKPOINT_DATE;
+}
 
 function renderCountdown() {
   const delta = Math.round((parseDate(checkpointDate) - today) / 86400000);
@@ -87,6 +101,7 @@ function renderCountdown() {
 function renderCheckpointDate() {
   const date = parseDate(checkpointDate);
   const fullDate = date.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  $("#start-date").value = startDate;
   $("#checkpoint-date").value = checkpointDate;
   $("#checkpoint-date-display").textContent = fullDate.replace(",", " ·");
   $("#checkpoint-stat-date").textContent = `Build steadily by ${date.toLocaleDateString("en-IN", { day: "numeric", month: "long" })}`;
@@ -183,7 +198,9 @@ function saveRuns() {
 }
 
 function init() {
+  const startInput = $("#start-date");
   const checkpointInput = $("#checkpoint-date");
+  startInput.value = startDate;
   checkpointInput.value = checkpointDate;
   renderCountdown();
   renderCheckpointDate();
@@ -191,22 +208,31 @@ function init() {
   renderProgress();
   renderRuns();
 
-  checkpointInput.addEventListener("change", () => {
-    if (!isValidDateValue(checkpointInput.value)) {
-      checkpointInput.value = checkpointDate;
+  const handleDateRangeChange = () => {
+    if (!isValidDateValue(startInput.value) || !isValidDateValue(checkpointInput.value)) {
+      $("#checkpoint-date-status").textContent = "Choose both dates to update your plan.";
       return;
     }
+    if (parseDate(checkpointInput.value) < parseDate(startInput.value)) {
+      $("#checkpoint-date-status").textContent = "Your end date must be on or after your start date.";
+      return;
+    }
+
+    startDate = startInput.value;
     checkpointDate = checkpointInput.value;
     try {
+      localStorage.setItem(START_STORAGE_KEY, startDate);
       localStorage.setItem(CHECKPOINT_STORAGE_KEY, checkpointDate);
-      $("#checkpoint-date-status").textContent = "Date saved in this browser.";
+      $("#checkpoint-date-status").textContent = "Date range saved in this browser.";
     } catch {
-      $("#checkpoint-date-status").textContent = "Date updated for this visit.";
+      $("#checkpoint-date-status").textContent = "Date range updated for this visit.";
     }
     renderCountdown();
     renderCheckpointDate();
     renderMilestones();
-  });
+  };
+  startInput.addEventListener("change", handleDateRangeChange);
+  checkpointInput.addEventListener("change", handleDateRangeChange);
 
   const dateInput = $("#run-date");
   const now = new Date();
