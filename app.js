@@ -428,21 +428,29 @@ function mergeHealthSamples(samples, field, aggregation, changedDates) {
 
 function initializeHealthSync() {
   const isNativeApp = Capacitor.isNativePlatform();
-  $("#health-sync-label").textContent = isNativeApp ? "Not connected" : "Manual for now";
-  $("#wearable-heading").textContent = isNativeApp ? "WATCH SYNC · YOUR HEALTH APP" : "WATCH SYNC · MANUAL FOR NOW";
-  $("#wearable-description").textContent = isNativeApp
-    ? "Sync daily totals from Apple Health on iPhone or Health Connect on Android. Your watch must share its readings with that health app."
-    : "Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs the Road to 10K+ phone app; support depends on your watch and its app.";
-  $("#sync-health-data").textContent = isNativeApp ? "Sync health data" : "Why can’t I connect here?";
-  $("#health-sync-status").textContent = isNativeApp
-    ? "Connect to request permission for steps, active calories, and heart rate. Readings stay on this device."
-    : "This browser can save manual entries. It cannot request watch-health permissions.";
+  const button = $("#sync-health-data");
+  const status = $("#health-sync-status");
+  const manualLink = $("#manual-entry-link");
+  let hasSynced = false;
 
-  $("#sync-health-data").addEventListener("click", async () => {
-    const status = $("#health-sync-status");
-    const button = $("#sync-health-data");
+  $("#health-sync-label").textContent = isNativeApp ? "Not connected" : "Manual entry";
+  $("#wearable-heading").textContent = isNativeApp ? "WATCH SYNC · OPTIONAL" : "TRACKING · YOUR CHOICE";
+  $("#wearable-description").textContent = isNativeApp
+    ? "Connect Apple Health or Health Connect if you want. Readings are accessed only when you tap to sync—there is no real-time or background tracking. You can enter numbers manually instead."
+    : "Manual entry works on this website. Watch syncing is optional in the phone app and happens only when you tap to sync—never in real time.";
+  button.hidden = !isNativeApp;
+  button.textContent = "Connect health app";
+  manualLink.textContent = isNativeApp ? "Enter manually instead" : "Enter manually";
+  status.textContent = isNativeApp
+    ? "No health data is read unless you choose Connect health app."
+    : "Add your readings below. This page does not connect to a watch.";
+
+  manualLink.addEventListener("click", () => {
+    if (isNativeApp) status.textContent = "Manual entry selected. Health data will not be read unless you tap Connect health app.";
+  });
+
+  button.addEventListener("click", async () => {
     if (!Capacitor.isNativePlatform()) {
-      status.textContent = "Automatic syncing needs the installable phone app. You can still enter numbers from your watch here.";
       return;
     }
 
@@ -492,6 +500,7 @@ function initializeHealthSync() {
         return;
       }
 
+      hasSynced = true;
       $("#activity-date").value = localDateValue(today);
       loadActivityDraft();
       $("#health-sync-label").textContent = "Synced";
@@ -502,7 +511,7 @@ function initializeHealthSync() {
       status.textContent = "Could not connect right now. Check permissions and try again.";
     } finally {
       button.disabled = false;
-      button.textContent = "Sync health data";
+      button.textContent = hasSynced ? "Sync health data" : "Connect health app";
     }
   });
 }

@@ -13,7 +13,7 @@ The run log and daily activity check-in are also saved locally. Daily activity i
 
 ## Wearable data
 
-The website supports manual entry. The phone companion can read daily steps, active calories, and average heart rate from Apple Health on iPhone or Health Connect on Android after the user grants read access. Tap **Sync health data** to refresh the last seven days. Health readings stay in local app storage and are not uploaded.
+The website supports manual entry. In the phone companion, connecting is optional: users can choose **Connect health app** or enter numbers manually. After read access is granted, **Sync health data** refreshes the last seven days only when tapped. There is no real-time or background syncing. Health readings stay in local app storage and are not uploaded.
 
 A watch must first share its readings with Apple Health or Health Connect. Support depends on the watch model and its companion app, so direct connection to every watch is not guaranteed. The phone app requests read access only; it does not write health data.
 

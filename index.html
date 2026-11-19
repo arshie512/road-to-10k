@@ -112,11 +112,12 @@
 
         <div class="wearable-note">
           <span class="wearable-icon" aria-hidden="true">⌁</span>
-          <div class="wearable-copy"><span class="mini-label" id="wearable-heading">WATCH SYNC · MANUAL FOR NOW</span><p id="wearable-description">Enter readings from your watch app here. Automatic Apple Health or Android Health Connect syncing needs a phone companion app; support depends on the watch and its app.</p></div>
+          <div class="wearable-copy"><span class="mini-label" id="wearable-heading">TRACKING · YOUR CHOICE</span><p id="wearable-description">Manual entry works on this website. Watch syncing is optional in the phone app and happens only when you tap to sync—never in real time.</p></div>
           <div class="wearable-actions">
-            <span class="manual-badge" id="health-sync-badge"><i></i><span id="health-sync-label">Manual for now</span></span>
-            <button class="health-sync-button" id="sync-health-data" type="button">Why can’t I connect here?</button>
-            <p class="health-sync-status" id="health-sync-status" role="status" aria-live="polite">This browser can save manual entries. It cannot request watch-health permissions.</p>
+            <span class="manual-badge" id="health-sync-badge"><i></i><span id="health-sync-label">Manual entry</span></span>
+            <button class="health-sync-button" id="sync-health-data" type="button" hidden>Connect health app</button>
+            <a class="manual-entry-link" id="manual-entry-link" href="#activity-form">Enter manually</a>
+            <p class="health-sync-status" id="health-sync-status" role="status" aria-live="polite">Add your readings below. This page does not connect to a watch.</p>
           </div>
         </div>
 
